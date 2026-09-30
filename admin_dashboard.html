@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard — Smart Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --green:#2e7d32; --green-light:#43a047; --green-pale:#e8f5e9;
+      --green-dark:#1b5e20; --accent:#ff8f00; --red:#e53935;
+      --red-pale:#ffebee; --blue:#1565c0; --bg:#f0f4f0;
+      --card:#ffffff; --text:#1a2e1a; --muted:#7a9b7a;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+    .layout { display:flex; min-height:100vh; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width:240px; background:var(--green-dark); padding:2rem 1.2rem;
+      display:flex; flex-direction:column; gap:0.4rem;
+      position:fixed; height:100vh; overflow-y:auto;
+    }
+    .sidebar-logo { font-family:'Playfair Display',serif; color:white; font-size:1.4rem; margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.15); }
+    .sidebar-logo span { font-size:0.75rem; display:block; color:#a5d6a7; font-family:'Nunito',sans-serif; font-weight:600; margin-top:2px; }
+    .nav-section { color:#81c784; font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; padding:1rem 1rem 0.4rem; }
+    .nav-item { display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; border-radius:10px; color:#c8e6c9; text-decoration:none; font-weight:700; font-size:0.9rem; transition:all 0.2s; }
+    .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.15); color:white; }
+    .nav-item .icon { font-size:1.1rem; width:22px; text-align:center; }
+
+    /* MAIN */
+    .main { margin-left:240px; flex:1; padding:2rem; }
+    .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; }
+    .page-header h1 { font-family:'Playfair Display',serif; font-size:1.8rem; color:var(--green-dark); }
+    .page-header .date { color:var(--muted); font-weight:600; font-size:0.9rem; }
+
+    /* STATS */
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.2rem; margin-bottom:2rem; }
+    .stat-card { background:var(--card); border-radius:16px; padding:1.4rem 1.6rem; box-shadow:0 2px 12px rgba(0,0,0,0.06); animation:fadeUp 0.5s ease both; }
+    .stat-card:nth-child(1){animation-delay:0.05s} .stat-card:nth-child(2){animation-delay:0.1s}
+    .stat-card:nth-child(3){animation-delay:0.15s} .stat-card:nth-child(4){animation-delay:0.2s}
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    .stat-icon  { font-size:2rem; margin-bottom:0.6rem; }
+    .stat-label { font-size:0.8rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+    .stat-value { font-size:2rem; font-weight:900; color:var(--text); line-height:1.1; margin:0.2rem 0; }
+    .stat-sub   { font-size:0.8rem; color:var(--muted); font-weight:600; }
+
+    /* LOW STOCK */
+    .alert-banner { background:var(--red-pale); border:2px solid #ffcdd2; border-radius:16px; padding:1.2rem 1.6rem; margin-bottom:2rem; animation:fadeUp 0.5s ease 0.2s both; }
+    .alert-banner-title { font-weight:900; color:var(--red); font-size:1rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
+    .alert-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:0.8rem; }
+    .alert-item { background:white; border-radius:12px; padding:0.8rem 1rem; border-left:4px solid var(--red); display:flex; justify-content:space-between; align-items:center; }
+    .alert-item-name  { font-weight:800; font-size:0.9rem; color:var(--text); }
+    .alert-item-qty   { font-weight:900; color:var(--red); font-size:0.95rem; }
+    .alert-item-badge { background:var(--red-pale); color:var(--red); font-size:0.7rem; font-weight:800; padding:0.2rem 0.5rem; border-radius:20px; margin-top:0.2rem; display:inline-block; }
+    .no-alerts { color:var(--green); font-weight:700; font-size:0.9rem; }
+
+    /* QUICK LINKS */
+    .quick-links { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:2rem; }
+    .quick-link { background:var(--card); border-radius:14px; padding:1.2rem; text-decoration:none; display:flex; align-items:center; gap:0.8rem; box-shadow:0 2px 10px rgba(0,0,0,0.05); transition:transform 0.2s,box-shadow 0.2s; animation:fadeUp 0.5s ease 0.3s both; }
+    .quick-link:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(0,0,0,0.1); }
+    .ql-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; }
+    .ql-green{background:var(--green-pale)} .ql-orange{background:#fff3e0} .ql-blue{background:#e3f2fd}
+    .ql-title { font-weight:800; font-size:0.9rem; color:var(--text); }
+    .ql-sub   { font-size:0.75rem; color:var(--muted); font-weight:600; }
+
+    /* CHARTS */
+    .charts-row { display:grid; grid-template-columns:2fr 1fr; gap:1.2rem; margin-bottom:2rem; }
+    .chart-card { background:var(--card); border-radius:16px; padding:1.6rem; box-shadow:0 2px 12px rgba(0,0,0,0.06); animation:fadeUp 0.5s ease 0.25s both; }
+    .chart-title { font-weight:800; font-size:1rem; color:var(--green-dark); margin-bottom:1.2rem; }
+
+    /* ORDERS */
+    .section-card { background:var(--card); border-radius:16px; padding:1.6rem; box-shadow:0 2px 12px rgba(0,0,0,0.06); margin-bottom:1.5rem; animation:fadeUp 0.5s ease 0.35s both; }
+    .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; }
+    .section-title  { font-weight:800; font-size:1rem; color:var(--green-dark); }
+    .badge { background:var(--green-pale); color:var(--green); font-size:0.75rem; font-weight:800; padding:0.25rem 0.75rem; border-radius:20px; }
+    .order-toolbar { display:flex; gap:0.8rem; margin-bottom:1.2rem; flex-wrap:wrap; align-items:center; }
+    .order-search { display:flex; align-items:center; gap:0.6rem; background:#f8faf8; border:2px solid #e8e8e8; border-radius:10px; padding:0.55rem 1rem; flex:1; min-width:200px; transition:border 0.2s; }
+    .order-search:focus-within { border-color:var(--green); }
+    .order-search input { border:none; outline:none; background:none; font-family:'Nunito',sans-serif; font-size:0.9rem; color:var(--text); width:100%; }
+    .order-search input::placeholder { color:var(--muted); }
+    .order-filter { border:2px solid #e8e8e8; border-radius:10px; padding:0.55rem 1rem; font-family:'Nunito',sans-serif; font-weight:700; font-size:0.88rem; color:var(--text); background:white; cursor:pointer; outline:none; transition:border 0.2s; }
+    .order-filter:focus { border-color:var(--green); }
+    .order-count { color:var(--muted); font-size:0.85rem; font-weight:700; margin-left:auto; }
+    .no-orders-msg { text-align:center; color:var(--muted); padding:2rem; font-weight:700; display:none; }
+    table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+    th { text-align:left; padding:0.6rem 0.8rem; background:var(--green-pale); color:var(--green-dark); font-weight:800; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px; }
+    th:first-child{border-radius:8px 0 0 8px} th:last-child{border-radius:0 8px 8px 0}
+    td { padding:0.75rem 0.8rem; border-bottom:1px solid #f5f5f5; color:#444; vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:#fafff9; }
+    .order-id    { font-weight:800; color:var(--green); }
+    .order-name  { font-weight:700; color:var(--text); }
+    .order-total { font-weight:800; color:var(--green-dark); }
+
+    .status-badge { display:inline-block; padding:0.25rem 0.8rem; border-radius:20px; font-size:0.75rem; font-weight:800; }
+    .status-New       { background:#e3f2fd; color:#1565c0; }
+    .status-Delivered { background:#e8f5e9; color:#2e7d32; }
+    .status-Cancelled { background:#ffebee; color:#c62828; }
+
+    .status-actions { display:flex; gap:0.4rem; flex-wrap:wrap; }
+    .btn-status { padding:0.25rem 0.7rem; border-radius:20px; border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:700; font-size:0.75rem; text-decoration:none; transition:opacity 0.2s; display:inline-block; }
+    .btn-status:hover { opacity:0.8; }
+    .btn-deliver { background:#e8f5e9; color:#2e7d32; }
+    .btn-cancel  { background:#ffebee; color:#c62828; }
+    .btn-reset   { background:#f5f5f5; color:#666; }
+
+    .empty-msg { text-align:center; color:var(--muted); padding:2rem; font-weight:600; }
+
+    @media(max-width:900px){
+      .sidebar{display:none} .main{margin-left:0}
+      .stats-grid{grid-template-columns:repeat(2,1fr)}
+      .charts-row{grid-template-columns:1fr}
+      .quick-links{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">🛒 Smart Store<span>Admin Panel</span></div>
+    <span class="nav-section">Main</span>
+    <a href="/admin"     class="nav-item active"><span class="icon">📊</span> Dashboard</a>
+    <a href="/customers" class="nav-item"><span class="icon">👥</span> Customers</a>
+    <span class="nav-section">Inventory</span>
+    <a href="/view_products" class="nav-item"><span class="icon">📦</span> Products</a>
+    <a href="/add_product"   class="nav-item"><span class="icon">➕</span> Add Product</a>
+    <span class="nav-section">Store</span>
+    <a href="/" class="nav-item"><span class="icon">🏪</span> View Store</a>
+  </aside>
+
+  <main class="main">
+    <div class="page-header">
+      <h1>Dashboard</h1>
+      <span class="date" id="currentDate"></span>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Total Revenue</div><div class="stat-value">₹{{ total_revenue }}</div><div class="stat-sub">All time earnings</div></div>
+      <div class="stat-card"><div class="stat-icon">🧾</div><div class="stat-label">Total Orders</div><div class="stat-value">{{ total_orders }}</div><div class="stat-sub">Orders placed</div></div>
+      <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-label">Customers</div><div class="stat-value">{{ customer_count }}</div><div class="stat-sub">Registered users</div></div>
+      <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-label">Products</div><div class="stat-value">{{ product_count }}</div><div class="stat-sub">Items in store</div></div>
+    </div>
+
+    <!-- LOW STOCK ALERTS -->
+    <div class="alert-banner">
+      <div class="alert-banner-title">
+        ⚠️ Low Stock Alerts
+        {% if low_stock %} — {{ low_stock|length }} product(s) need restocking!{% endif %}
+      </div>
+      {% if low_stock %}
+        <div class="alert-grid">
+          {% for p in low_stock %}
+          <div class="alert-item">
+            <div>
+              <div class="alert-item-name">{{ p[1] }}</div>
+              <span class="alert-item-badge">{{ p[4]|capitalize if p[4] else 'General' }}</span>
+            </div>
+            <div style="text-align:right">
+              <div class="alert-item-qty">{{ p[3] }} left</div>
+              <a href="/edit_product/{{ p[0] }}" style="font-size:0.72rem;color:#1565c0;font-weight:700;text-decoration:none;">Restock →</a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="no-alerts">✅ All products are well stocked!</div>
+      {% endif %}
+    </div>
+
+    <!-- QUICK LINKS -->
+    <div class="quick-links">
+      <a href="/add_product"   class="quick-link"><div class="ql-icon ql-green">➕</div><div><div class="ql-title">Add Product</div><div class="ql-sub">Add new items to store</div></div></a>
+      <a href="/customers"     class="quick-link"><div class="ql-icon ql-blue">👥</div><div><div class="ql-title">View Customers</div><div class="ql-sub">See registered customers</div></div></a>
+      <a href="/view_products" class="quick-link"><div class="ql-icon ql-orange">📋</div><div><div class="ql-title">Manage Products</div><div class="ql-sub">Edit or delete products</div></div></a>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">📈 Revenue by Day</div>
+        <canvas id="revenueChart" height="120"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">🧾 Order Status</div>
+        <canvas id="statusChart" height="180"></canvas>
+      </div>
+    </div>
+
+    <!-- ORDERS TABLE -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">🧾 Recent Orders</div>
+        <span class="badge" id="orderCountBadge">{{ total_orders }} total</span>
+      </div>
+
+      <!-- SEARCH TOOLBAR -->
+      <div class="order-toolbar">
+        <div class="order-search">
+          <span>🔍</span>
+          <input type="text" id="orderSearch" placeholder="Search by name, email or order ID..."/>
+        </div>
+        <select class="order-filter" id="statusFilter">
+          <option value="all">All Status</option>
+          <option value="New">🔵 New</option>
+          <option value="Delivered">✅ Delivered</option>
+          <option value="Cancelled">✕ Cancelled</option>
+        </select>
+        <span class="order-count" id="orderCount">{{ total_orders }} orders</span>
+      </div>
+
+      {% if orders %}
+      <table>
+        <thead>
+          <tr>
+            <th>#ID</th><th>Customer</th><th>Email</th>
+            <th>Total</th><th>Address</th><th>Date</th>
+            <th>Status</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody">
+          {% for o in orders %}
+          <tr class="order-row"
+              data-id="{{ o[0] }}"
+              data-name="{{ o[1]|lower }}"
+              data-email="{{ o[2]|lower if o[2] else '' }}"
+              data-status="{{ o[7] if o[7] else 'New' }}">
+            <td><span class="order-id">#{{ o[0] }}</span></td>
+            <td><span class="order-name">{{ o[1] }}</span></td>
+            <td>{{ o[2] }}</td>
+            <td><span class="order-total">₹{{ o[4] }}</span></td>
+            <td>{{ o[5][:25] }}{% if o[5]|length > 25 %}...{% endif %}</td>
+            <td>{{ o[6] }}</td>
+            <td><span class="status-badge status-{{ o[7] if o[7] else 'New' }}">{{ o[7] if o[7] else 'New' }}</span></td>
+            <td>
+              <div class="status-actions">
+                {% if o[7] != 'Delivered' %}<a href="/update_order_status/{{ o[0] }}/Delivered" class="btn-status btn-deliver">✅ Delivered</a>{% endif %}
+                {% if o[7] != 'Cancelled' %}<a href="/update_order_status/{{ o[0] }}/Cancelled" class="btn-status btn-cancel">✕ Cancel</a>{% endif %}
+                {% if o[7] != 'New' %}<a href="/update_order_status/{{ o[0] }}/New" class="btn-status btn-reset">↺ Reset</a>{% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="no-orders-msg" id="noOrdersMsg">😔 No orders match your search.</div>
+      {% else %}
+      <p class="empty-msg">No orders yet. Share your store link to get started! 🚀</p>
+      {% endif %}
+    </div>
+
+  </main>
+</div>
+
+<script>
+  document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-IN', {
+    weekday:'long', year:'numeric', month:'long', day:'numeric'
+  });
+
+  const orders = {{ orders | tojson }};
+
+  const revenueByDate = {};
+  orders.forEach(o => {
+    const date = o[6] ? o[6].split(' ')[0] : 'Unknown';
+    revenueByDate[date] = (revenueByDate[date] || 0) + (parseInt(o[4]) || 0);
+  });
+  const labels = Object.keys(revenueByDate).slice(-7);
+  const values = labels.map(d => revenueByDate[d]);
+
+  new Chart(document.getElementById('revenueChart'), {
+    type:'bar',
+    data:{
+      labels: labels.length ? labels : ['No orders yet'],
+      datasets:[{ label:'Revenue (₹)', data: values.length ? values : [0], backgroundColor:'rgba(46,125,50,0.7)', borderColor:'#2e7d32', borderWidth:2, borderRadius:8 }]
+    },
+    options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, grid:{ color:'#f0f0f0' } }, x:{ grid:{ display:false } } } }
+  });
+
+  const statusCounts = { New:0, Delivered:0, Cancelled:0 };
+  orders.forEach(o => { const s = o[7] || 'New'; if(statusCounts[s] !== undefined) statusCounts[s]++; });
+
+  new Chart(document.getElementById('statusChart'), {
+    type:'doughnut',
+    data:{
+      labels:['New','Delivered','Cancelled'],
+      datasets:[{ data:[statusCounts.New, statusCounts.Delivered, statusCounts.Cancelled], backgroundColor:['#1565c0','#2e7d32','#e53935'], borderWidth:0 }]
+    },
+    options:{ responsive:true, cutout:'70%', plugins:{ legend:{ position:'bottom', labels:{ font:{ family:'Nunito', weight:'700' } } } } }
+  });
+
+  // Order search & filter
+  const orderSearch   = document.getElementById('orderSearch');
+  const statusFilter  = document.getElementById('statusFilter');
+  const orderRows     = document.querySelectorAll('.order-row');
+  const noOrdersMsg   = document.getElementById('noOrdersMsg');
+  const orderCount    = document.getElementById('orderCount');
+  const orderCountBadge = document.getElementById('orderCountBadge');
+
+  function filterOrders() {
+    const q      = orderSearch ? orderSearch.value.toLowerCase() : '';
+    const status = statusFilter ? statusFilter.value : 'all';
+    let visible  = 0;
+    orderRows.forEach(row => {
+      const idMatch     = row.dataset.id.includes(q);
+      const nameMatch   = row.dataset.name.includes(q);
+      const emailMatch  = row.dataset.email.includes(q);
+      const statusMatch = status === 'all' || row.dataset.status === status;
+      const show = (idMatch || nameMatch || emailMatch) && statusMatch;
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    if (noOrdersMsg) noOrdersMsg.style.display = visible === 0 ? 'block' : 'none';
+    if (orderCount) orderCount.textContent = visible + ' order' + (visible !== 1 ? 's' : '');
+    if (orderCountBadge) orderCountBadge.textContent = visible + ' total';
+  }
+
+  if (orderSearch)  orderSearch.addEventListener('input', filterOrders);
+  if (statusFilter) statusFilter.addEventListener('change', filterOrders);
+</script>
+</body>
+</html>

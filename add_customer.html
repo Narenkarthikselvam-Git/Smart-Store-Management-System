@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add Customer — Smart Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green:      #2e7d32;
+      --green-pale: #e8f5e9;
+      --green-dark: #1b5e20;
+      --bg:         #f0f4f0;
+      --card:       #ffffff;
+      --text:       #1a2e1a;
+      --muted:      #7a9b7a;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    /* LAYOUT */
+    .layout { display:flex; min-height:100vh; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width:240px; background:var(--green-dark); padding:2rem 1.2rem;
+      display:flex; flex-direction:column; gap:0.4rem;
+      position:fixed; height:100vh; overflow-y:auto;
+    }
+    .sidebar-logo { font-family:'Playfair Display',serif; color:white; font-size:1.4rem; margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.15); }
+    .sidebar-logo span { font-size:0.75rem; display:block; color:#a5d6a7; font-family:'Nunito',sans-serif; font-weight:600; margin-top:2px; }
+    .nav-section { color:#81c784; font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; padding:1rem 1rem 0.4rem; }
+    .nav-item { display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; border-radius:10px; color:#c8e6c9; text-decoration:none; font-weight:700; font-size:0.9rem; transition:all 0.2s; }
+    .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.15); color:white; }
+    .nav-item .icon { font-size:1.1rem; width:22px; text-align:center; }
+
+    /* MAIN */
+    .main { margin-left:240px; flex:1; padding:2rem; display:flex; flex-direction:column; }
+
+    /* PAGE HEADER */
+    .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; }
+    .page-header h1 { font-family:'Playfair Display',serif; font-size:1.8rem; color:var(--green-dark); }
+    .btn-back {
+      background:var(--green-pale); color:var(--green);
+      text-decoration:none; padding:0.6rem 1.2rem;
+      border-radius:12px; font-weight:800; font-size:0.88rem;
+      display:flex; align-items:center; gap:0.4rem;
+      transition:background 0.2s;
+    }
+    .btn-back:hover { background:#c8e6c9; }
+
+    /* FORM LAYOUT */
+    .form-layout {
+      display:grid; grid-template-columns:1fr 340px; gap:1.5rem;
+      animation:fadeUp 0.4s ease both;
+    }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+    /* FORM CARD */
+    .form-card {
+      background:var(--card); border-radius:20px;
+      padding:2rem; box-shadow:0 4px 20px rgba(0,0,0,0.07);
+    }
+    .form-card-title {
+      font-weight:900; font-size:1.05rem; color:var(--green-dark);
+      margin-bottom:1.5rem; padding-bottom:0.8rem;
+      border-bottom:2px solid var(--green-pale);
+      display:flex; align-items:center; gap:0.5rem;
+    }
+
+    /* FORM FIELDS */
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .field { margin-bottom:1.2rem; }
+    .field label {
+      display:block; font-weight:700; color:#444;
+      margin-bottom:0.35rem; font-size:0.88rem;
+    }
+    .field label span { color:var(--green); }
+    .field input, .field select, .field textarea {
+      width:100%; padding:0.75rem 1rem;
+      border:2px solid #e8e8e8; border-radius:12px;
+      font-family:'Nunito',sans-serif; font-size:0.93rem;
+      color:var(--text); background:white;
+      outline:none; transition:border 0.2s, box-shadow 0.2s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color:var(--green);
+      box-shadow:0 0 0 4px rgba(46,125,50,0.1);
+    }
+    .field input::placeholder, .field textarea::placeholder { color:#bbb; }
+    .field textarea { resize:none; height:90px; }
+
+    /* INPUT WITH ICON */
+    .input-wrap { position:relative; }
+    .input-wrap .input-icon {
+      position:absolute; left:0.9rem; top:50%; transform:translateY(-50%);
+      font-size:1rem; pointer-events:none;
+    }
+    .input-wrap input { padding-left:2.4rem; }
+
+    /* SUBMIT BTN */
+    .btn-submit {
+      width:100%; background:var(--green); color:white;
+      border:none; padding:1rem; border-radius:14px;
+      font-size:1rem; font-weight:900; cursor:pointer;
+      transition:background 0.2s, transform 0.1s;
+      display:flex; align-items:center; justify-content:center; gap:0.5rem;
+      margin-top:0.5rem; box-shadow:0 4px 14px rgba(46,125,50,0.3);
+    }
+    .btn-submit:hover  { background:var(--green-dark); }
+    .btn-submit:active { transform:scale(0.98); }
+
+    /* SIDE PANEL */
+    .side-panel { display:flex; flex-direction:column; gap:1.2rem; }
+
+    /* PREVIEW CARD */
+    .preview-card {
+      background:var(--card); border-radius:20px;
+      padding:1.8rem; box-shadow:0 4px 20px rgba(0,0,0,0.07);
+      text-align:center;
+    }
+    .preview-avatar {
+      width:80px; height:80px; border-radius:50%;
+      background:var(--green-pale); color:var(--green);
+      display:flex; align-items:center; justify-content:center;
+      font-size:2rem; font-weight:900; margin:0 auto 1rem;
+      border:3px solid var(--green); transition:all 0.2s;
+    }
+    .preview-name  { font-weight:900; font-size:1.1rem; color:var(--text); min-height:1.5rem; }
+    .preview-email { font-size:0.82rem; color:var(--muted); font-weight:600; margin-top:0.2rem; min-height:1rem; }
+    .preview-phone { font-size:0.82rem; color:var(--muted); font-weight:600; margin-top:0.2rem; min-height:1rem; }
+    .preview-label {
+      font-size:0.72rem; font-weight:800; color:var(--muted);
+      text-transform:uppercase; letter-spacing:1px; margin-bottom:1rem;
+    }
+
+    /* TIPS CARD */
+    .tips-card {
+      background:var(--green-pale); border-radius:20px;
+      padding:1.5rem; border-left:4px solid var(--green);
+    }
+    .tips-title { font-weight:900; font-size:0.9rem; color:var(--green-dark); margin-bottom:0.8rem; }
+    .tip { display:flex; gap:0.6rem; margin-bottom:0.6rem; font-size:0.83rem; color:#3a5f3a; font-weight:600; align-items:flex-start; }
+    .tip span { flex-shrink:0; }
+
+    @media(max-width:900px){
+      .sidebar{display:none} .main{margin-left:0}
+      .form-layout{grid-template-columns:1fr}
+      .form-row{grid-template-columns:1fr}
+      .side-panel{display:none}
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">🛒 Smart Store<span>Admin Panel</span></div>
+    <span class="nav-section">Main</span>
+    <a href="/admin"     class="nav-item"><span class="icon">📊</span> Dashboard</a>
+    <a href="/customers" class="nav-item active"><span class="icon">👥</span> Customers</a>
+    <span class="nav-section">Inventory</span>
+    <a href="/view_products" class="nav-item"><span class="icon">📦</span> Products</a>
+    <a href="/add_product"   class="nav-item"><span class="icon">➕</span> Add Product</a>
+    <span class="nav-section">Store</span>
+    <a href="/" class="nav-item"><span class="icon">🏪</span> View Store</a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="page-header">
+      <h1>➕ Add Customer</h1>
+      <a href="/customers" class="btn-back">← Back to Customers</a>
+    </div>
+
+    <div class="form-layout">
+
+      <!-- FORM -->
+      <div>
+        <form action="/add_customer" method="POST">
+          <div class="form-card">
+            <div class="form-card-title">👤 Personal Information</div>
+
+            <div class="form-row">
+              <div class="field">
+                <label>First Name <span>*</span></label>
+                <div class="input-wrap">
+                  <span class="input-icon">👤</span>
+                  <input type="text" name="first_name" id="firstName" placeholder="e.g. Rahul" required/>
+                </div>
+              </div>
+              <div class="field">
+                <label>Last Name <span>*</span></label>
+                <div class="input-wrap">
+                  <span class="input-icon">👤</span>
+                  <input type="text" name="last_name" id="lastName" placeholder="e.g. Kumar" required/>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Email Address <span>*</span></label>
+              <div class="input-wrap">
+                <span class="input-icon">📧</span>
+                <input type="email" name="email" id="emailField" placeholder="e.g. rahul@email.com" required/>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Phone Number <span>*</span></label>
+              <div class="input-wrap">
+                <span class="input-icon">📱</span>
+                <input type="tel" name="phone" id="phoneField" placeholder="e.g. 9876543210" required/>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card" style="margin-top:1.2rem;">
+            <div class="form-card-title">📍 Address Details</div>
+
+            <div class="field">
+              <label>Delivery Address <span>*</span></label>
+              <textarea name="address" placeholder="House no, Street, Area, City, Pincode..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">
+              ✅ Add Customer
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- SIDE PANEL -->
+      <div class="side-panel">
+
+        <!-- LIVE PREVIEW -->
+        <div class="preview-card">
+          <div class="preview-label">Live Preview</div>
+          <div class="preview-avatar" id="previewAvatar">👤</div>
+          <div class="preview-name"  id="previewName">Full Name</div>
+          <div class="preview-email" id="previewEmail">email@example.com</div>
+          <div class="preview-phone" id="previewPhone">📱 Phone Number</div>
+        </div>
+
+        <!-- TIPS -->
+        <div class="tips-card">
+          <div class="tips-title">💡 Tips</div>
+          <div class="tip"><span>✅</span> Make sure the email is unique — duplicate emails are not allowed.</div>
+          <div class="tip"><span>📱</span> Enter a valid 10-digit phone number.</div>
+          <div class="tip"><span>📍</span> A complete address helps with faster delivery.</div>
+          <div class="tip"><span>🔒</span> Customer data is stored securely in your database.</div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Live preview
+  const firstName = document.getElementById('firstName');
+  const lastName  = document.getElementById('lastName');
+  const emailField = document.getElementById('emailField');
+  const phoneField = document.getElementById('phoneField');
+
+  const previewAvatar = document.getElementById('previewAvatar');
+  const previewName   = document.getElementById('previewName');
+  const previewEmail  = document.getElementById('previewEmail');
+  const previewPhone  = document.getElementById('previewPhone');
+
+  function updatePreview() {
+    const fn = firstName.value.trim();
+    const ln = lastName.value.trim();
+    const fullName = (fn + ' ' + ln).trim();
+
+    previewName.textContent  = fullName || 'Full Name';
+    previewEmail.textContent = emailField.value.trim() || 'email@example.com';
+    previewPhone.textContent = phoneField.value.trim() ? '📱 ' + phoneField.value.trim() : '📱 Phone Number';
+
+    if (fn) {
+      previewAvatar.textContent = fn[0].toUpperCase();
+      previewAvatar.style.background = '#e8f5e9';
+      previewAvatar.style.color = '#2e7d32';
+    } else {
+      previewAvatar.textContent = '👤';
+    }
+  }
+
+  firstName.addEventListener('input', updatePreview);
+  lastName.addEventListener('input',  updatePreview);
+  emailField.addEventListener('input', updatePreview);
+  phoneField.addEventListener('input', updatePreview);
+</script>
+</body>
+</html>

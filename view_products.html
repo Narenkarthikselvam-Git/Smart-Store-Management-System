@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Products — Smart Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green:      #2e7d32;
+      --green-pale: #e8f5e9;
+      --green-dark: #1b5e20;
+      --red:        #e53935;
+      --red-pale:   #ffebee;
+      --orange:     #ff8f00;
+      --orange-pale:#fff3e0;
+      --blue:       #1565c0;
+      --blue-pale:  #e3f2fd;
+      --bg:         #f0f4f0;
+      --card:       #ffffff;
+      --text:       #1a2e1a;
+      --muted:      #7a9b7a;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    .layout { display:flex; min-height:100vh; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width:240px; background:var(--green-dark); padding:2rem 1.2rem;
+      display:flex; flex-direction:column; gap:0.4rem;
+      position:fixed; height:100vh; overflow-y:auto;
+    }
+    .sidebar-logo { font-family:'Playfair Display',serif; color:white; font-size:1.4rem; margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.15); }
+    .sidebar-logo span { font-size:0.75rem; display:block; color:#a5d6a7; font-family:'Nunito',sans-serif; font-weight:600; margin-top:2px; }
+    .nav-section { color:#81c784; font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; padding:1rem 1rem 0.4rem; }
+    .nav-item { display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; border-radius:10px; color:#c8e6c9; text-decoration:none; font-weight:700; font-size:0.9rem; transition:all 0.2s; }
+    .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.15); color:white; }
+    .nav-item .icon { font-size:1.1rem; width:22px; text-align:center; }
+
+    /* MAIN */
+    .main { margin-left:240px; flex:1; padding:2rem; }
+
+    /* PAGE HEADER */
+    .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+    .page-header h1 { font-family:'Playfair Display',serif; font-size:1.8rem; color:var(--green-dark); }
+    .btn-add {
+      background:var(--green); color:white; text-decoration:none;
+      padding:0.7rem 1.4rem; border-radius:12px; font-weight:800; font-size:0.9rem;
+      display:flex; align-items:center; gap:0.5rem;
+      transition:background 0.2s; box-shadow:0 4px 12px rgba(46,125,50,0.3);
+    }
+    .btn-add:hover { background:var(--green-dark); }
+
+    /* STATS */
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1.2rem; margin-bottom:2rem; }
+    .stat-card {
+      background:var(--card); border-radius:16px; padding:1.1rem 1.3rem;
+      box-shadow:0 2px 12px rgba(0,0,0,0.06);
+      display:flex; align-items:center; gap:0.9rem;
+      animation:fadeUp 0.4s ease both;
+    }
+    .stat-card:nth-child(1){animation-delay:0.05s}
+    .stat-card:nth-child(2){animation-delay:0.1s}
+    .stat-card:nth-child(3){animation-delay:0.15s}
+    .stat-card:nth-child(4){animation-delay:0.2s}
+    @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .stat-icon-box { width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+    .bg-green  { background:var(--green-pale); }
+    .bg-orange { background:var(--orange-pale); }
+    .bg-blue   { background:var(--blue-pale); }
+    .bg-red    { background:var(--red-pale); }
+    .stat-label { font-size:0.75rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+    .stat-value { font-size:1.4rem; font-weight:900; color:var(--text); }
+
+    /* TOOLBAR */
+    .toolbar {
+      background:var(--card); border-radius:14px;
+      padding:1rem 1.5rem; margin-bottom:1.5rem;
+      display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+      box-shadow:0 2px 10px rgba(0,0,0,0.05);
+      animation:fadeUp 0.4s ease 0.2s both;
+    }
+    .search-wrap { display:flex; align-items:center; gap:0.6rem; flex:1; min-width:200px; }
+    .search-wrap input {
+      border:none; outline:none; font-family:'Nunito',sans-serif;
+      font-size:0.93rem; background:none; color:var(--text); width:100%;
+    }
+    .search-wrap input::placeholder { color:var(--muted); }
+    .search-icon { color:var(--muted); font-size:1rem; }
+    .divider { width:1px; height:24px; background:#e0e0e0; }
+    .cat-filter {
+      border:none; outline:none; background:none;
+      font-family:'Nunito',sans-serif; font-weight:700;
+      font-size:0.88rem; color:var(--text); cursor:pointer;
+      padding:0.3rem 0.5rem;
+    }
+    .count-label { color:var(--muted); font-size:0.85rem; font-weight:700; margin-left:auto; }
+
+    /* TABLE CARD */
+    .table-card {
+      background:var(--card); border-radius:16px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.06);
+      overflow:hidden;
+      animation:fadeUp 0.4s ease 0.25s both;
+    }
+    table { width:100%; border-collapse:collapse; }
+    thead tr { background:var(--green-pale); }
+    th { padding:0.75rem 1.2rem; text-align:left; font-size:0.78rem; font-weight:800; color:var(--green-dark); text-transform:uppercase; letter-spacing:0.5px; }
+    td { padding:0.85rem 1.2rem; border-bottom:1px solid #f5f5f5; font-size:0.9rem; color:#444; vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    tbody tr { transition:background 0.15s; }
+    tbody tr:hover td { background:#f9fff9; }
+
+    /* PRODUCT CELL */
+    .product-cell { display:flex; align-items:center; gap:0.9rem; }
+    .product-icon-box {
+      width:42px; height:42px; border-radius:12px;
+      background:var(--green-pale);
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.4rem; flex-shrink:0;
+    }
+    .product-name { font-weight:800; color:var(--text); font-size:0.92rem; }
+    .product-id   { font-size:0.75rem; color:var(--muted); font-weight:600; }
+
+    /* BADGES */
+    .cat-badge {
+      padding:0.25rem 0.75rem; border-radius:20px;
+      font-size:0.78rem; font-weight:800; display:inline-block;
+    }
+    .cat-fruits     { background:#e8f5e9; color:#2e7d32; }
+    .cat-dairy      { background:#e3f2fd; color:#1565c0; }
+    .cat-snacks     { background:#fff3e0; color:#e65100; }
+    .cat-beverages  { background:#f3e5f5; color:#6a1b9a; }
+    .cat-household  { background:#fce4ec; color:#c62828; }
+    .cat-general    { background:#f5f5f5; color:#555; }
+
+    .price-text  { font-weight:900; color:var(--green); font-size:0.95rem; }
+
+    .stock-wrap { display:flex; align-items:center; gap:0.6rem; }
+    .stock-bar-bg { width:70px; height:6px; background:#eee; border-radius:10px; overflow:hidden; }
+    .stock-bar    { height:100%; border-radius:10px; transition:width 0.3s; }
+    .stock-ok     { background:var(--green); }
+    .stock-low    { background:var(--orange); }
+    .stock-out    { background:var(--red); }
+    .stock-num    { font-weight:800; font-size:0.85rem; }
+    .stock-num.ok  { color:var(--green); }
+    .stock-num.low { color:var(--orange); }
+    .stock-num.out { color:var(--red); }
+
+    /* ACTION BUTTONS */
+    .actions { display:flex; gap:0.5rem; }
+    .btn-edit {
+      background:var(--blue-pale); color:var(--blue);
+      text-decoration:none; padding:0.3rem 0.8rem;
+      border-radius:20px; font-weight:700; font-size:0.8rem;
+      transition:background 0.2s; display:inline-block;
+    }
+    .btn-edit:hover { background:#bbdefb; }
+    .btn-delete {
+      background:var(--red-pale); color:var(--red);
+      text-decoration:none; padding:0.3rem 0.8rem;
+      border-radius:20px; font-weight:700; font-size:0.8rem;
+      transition:background 0.2s; display:inline-block;
+    }
+    .btn-delete:hover { background:#ffcdd2; }
+
+    /* EMPTY */
+    .empty-state { text-align:center; padding:4rem 2rem; }
+    .empty-state .empty-icon { font-size:3.5rem; margin-bottom:1rem; }
+    .empty-state h3 { font-size:1.2rem; font-weight:800; color:var(--text); margin-bottom:0.5rem; }
+    .empty-state p  { color:var(--muted); font-weight:600; margin-bottom:1.5rem; }
+    .empty-state a  { background:var(--green); color:white; text-decoration:none; padding:0.7rem 1.5rem; border-radius:12px; font-weight:800; font-size:0.9rem; display:inline-block; }
+
+    .no-results { text-align:center; padding:2.5rem; color:var(--muted); font-weight:700; display:none; }
+
+    @media(max-width:900px){
+      .sidebar{display:none} .main{margin-left:0}
+      .stats-row{grid-template-columns:repeat(2,1fr)}
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">🛒 Smart Store<span>Admin Panel</span></div>
+    <span class="nav-section">Main</span>
+    <a href="/admin"     class="nav-item"><span class="icon">📊</span> Dashboard</a>
+    <a href="/customers" class="nav-item"><span class="icon">👥</span> Customers</a>
+    <span class="nav-section">Inventory</span>
+    <a href="/view_products" class="nav-item active"><span class="icon">📦</span> Products</a>
+    <a href="/add_product"   class="nav-item"><span class="icon">➕</span> Add Product</a>
+    <span class="nav-section">Store</span>
+    <a href="/" class="nav-item"><span class="icon">🏪</span> View Store</a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="page-header">
+      <h1>📦 Products</h1>
+      <a href="/add_product" class="btn-add">➕ Add Product</a>
+    </div>
+
+    <!-- STATS -->
+    {% set low_count = products | selectattr(3, 'le', 10) | list | length %}
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon-box bg-green">📦</div>
+        <div><div class="stat-label">Total Products</div><div class="stat-value">{{ products|length }}</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon-box bg-blue">💰</div>
+        <div>
+          <div class="stat-label">Avg Price</div>
+          <div class="stat-value">
+            {% if products %}₹{{ (products | map(attribute=2) | sum / products|length) | int }}{% else %}₹0{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon-box bg-orange">📊</div>
+        <div>
+          <div class="stat-label">Total Stock</div>
+          <div class="stat-value">{{ products | map(attribute=3) | sum }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon-box bg-red">⚠️</div>
+        <div>
+          <div class="stat-label">Low Stock</div>
+          <div class="stat-value" style="color:#e53935">{{ low_stock_threshold }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <span class="search-icon">🔍</span>
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Search products..."/>
+      </div>
+      <div class="divider"></div>
+      <select class="cat-filter" id="catFilter">
+        <option value="all">All Categories</option>
+        <option value="fruits">🍎 Fruits</option>
+        <option value="dairy">🥛 Dairy</option>
+        <option value="snacks">🍟 Snacks</option>
+        <option value="beverages">🧃 Beverages</option>
+        <option value="household">🧹 Household</option>
+        <option value="general">📦 General</option>
+      </select>
+      <span class="count-label" id="countLabel">{{ products|length }} products</span>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+      {% if products %}
+      <table id="productTable">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="productBody">
+          {% set cat_icons = {'fruits':'🍎','dairy':'🥛','snacks':'🍟','beverages':'🧃','household':'🧹','general':'🛒'} %}
+          {% for p in products %}
+          {% set cat = p[4] if p[4] else 'general' %}
+          {% set icon = cat_icons.get(cat, '🛒') %}
+          {% set stock = p[3] %}
+          {% set stock_pct = [((stock / 100) * 100), 100] | min %}
+          <tr class="product-row"
+              data-name="{{ p[1]|lower }}"
+              data-cat="{{ cat }}">
+            <td>
+              <div class="product-cell">
+                <div class="product-icon-box">{{ icon }}</div>
+                <div>
+                  <div class="product-name">{{ p[1] }}</div>
+                  <div class="product-id">#{{ p[0] }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="cat-badge cat-{{ cat }}">{{ icon }} {{ cat | capitalize }}</span>
+            </td>
+            <td><span class="price-text">₹{{ p[2] }}</span></td>
+            <td>
+              <div class="stock-wrap">
+                <div class="stock-bar-bg">
+                  <div class="stock-bar {% if stock <= 0 %}stock-out{% elif stock <= 10 %}stock-low{% else %}stock-ok{% endif %}"
+                       style="width:{{ [stock_pct, 100]|min }}%"></div>
+                </div>
+                <span class="stock-num {% if stock <= 0 %}out{% elif stock <= 10 %}low{% else %}ok{% endif %}">
+                  {{ stock }}
+                </span>
+                {% if stock <= 10 and stock > 0 %}
+                  <span style="font-size:0.7rem;color:#ff8f00;font-weight:800;">⚠️ Low</span>
+                {% elif stock <= 0 %}
+                  <span style="font-size:0.7rem;color:#e53935;font-weight:800;">Out</span>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              <div class="actions">
+                <a href="/edit_product/{{ p[0] }}" class="btn-edit">✏️ Edit</a>
+                <a href="/delete_product/{{ p[0] }}"
+                   class="btn-delete"
+                   onclick="return confirm('Delete {{ p[1] }}?')">🗑 Delete</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="no-results" id="noResults">😔 No products match your search.</div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h3>No Products Yet</h3>
+        <p>Add your first product to get started.</p>
+        <a href="/add_product">➕ Add Product</a>
+      </div>
+      {% endif %}
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const searchInput = document.getElementById('searchInput');
+  const catFilter   = document.getElementById('catFilter');
+  const rows        = document.querySelectorAll('.product-row');
+  const noResults   = document.getElementById('noResults');
+  const countLabel  = document.getElementById('countLabel');
+
+  function filterTable() {
+    const q   = searchInput.value.toLowerCase();
+    const cat = catFilter.value;
+    let visible = 0;
+    rows.forEach(row => {
+      const nameMatch = row.dataset.name.includes(q);
+      const catMatch  = cat === 'all' || row.dataset.cat === cat;
+      const show = nameMatch && catMatch;
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    noResults.style.display = visible === 0 ? 'block' : 'none';
+    countLabel.textContent = visible + ' product' + (visible !== 1 ? 's' : '');
+  }
+
+  searchInput.addEventListener('input', filterTable);
+  catFilter.addEventListener('change', filterTable);
+</script>
+</body>
+</html>

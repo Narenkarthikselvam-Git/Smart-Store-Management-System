@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout — Smart Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Nunito', sans-serif; background: #f0f7f0; min-height: 100vh; }
+    nav { background: #2e7d32; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    nav .logo { color: white; font-size: 1.5rem; font-weight: 800; }
+    nav a { color: white; text-decoration: none; font-weight: 600; }
+    .page { max-width: 900px; margin: 2rem auto; padding: 0 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    h2 { font-size: 1.4rem; font-weight: 800; color: #2e7d32; margin-bottom: 1.2rem; }
+    .card { background: white; border-radius: 16px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+    label { display: block; font-weight: 700; color: #333; margin-bottom: 0.3rem; font-size: 0.9rem; }
+    input, textarea { width: 100%; padding: 0.7rem 1rem; border: 2px solid #e0e0e0; border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 0.95rem; margin-bottom: 1rem; outline: none; transition: border 0.2s; }
+    input:focus, textarea:focus { border-color: #2e7d32; }
+    textarea { resize: none; height: 80px; }
+    .btn-order { width: 100%; background: #2e7d32; color: white; border: none; padding: 1rem; border-radius: 12px; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: background 0.2s; }
+    .btn-order:hover { background: #1b5e20; }
+    .summary-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; }
+    .summary-item .item-name  { font-weight: 700; color: #333; }
+    .summary-item .item-price { color: #2e7d32; font-weight: 700; }
+    .total-row { display: flex; justify-content: space-between; padding: 1rem 0 0; font-size: 1.2rem; font-weight: 800; color: #2e7d32; border-top: 2px solid #e8f5e9; margin-top: 0.5rem; }
+    .empty-cart { text-align: center; color: #999; padding: 2rem; }
+    @media (max-width: 640px) { .page { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">🛒 Smart Store</span>
+  <a href="/">← Back to Shop</a>
+</nav>
+
+<div class="page">
+
+  <div class="card">
+    <h2>🧾 Order Summary</h2>
+    <div id="summaryItems"><p class="empty-cart">Your cart is empty.</p></div>
+    <div class="total-row">
+      <span>Total</span>
+      <span id="summaryTotal">₹0</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📦 Delivery Details</h2>
+    <form action="/checkout" method="POST">
+      <input type="hidden" name="items" id="hiddenItems"/>
+      <input type="hidden" name="total" id="hiddenTotal"/>
+
+      <label>Full Name</label>
+      <input type="text" name="customer_name" placeholder="Your full name" required/>
+
+      <label>Email</label>
+      <input type="email" name="customer_email" placeholder="your@email.com" required/>
+
+      <label>Phone Number</label>
+      <input type="tel" name="phone" placeholder="9876543210" required/>
+
+      <label>Delivery Address</label>
+      <textarea name="address" placeholder="House no, Street, City, Pincode" required></textarea>
+
+      <button type="submit" class="btn-order">✅ Place Order</button>
+    </form>
+  </div>
+
+</div>
+
+<script>
+  const cart = JSON.parse(localStorage.getItem('smartstore_cart') || '[]');
+  const summaryItems = document.getElementById('summaryItems');
+  const summaryTotal = document.getElementById('summaryTotal');
+  const hiddenItems  = document.getElementById('hiddenItems');
+  const hiddenTotal  = document.getElementById('hiddenTotal');
+
+  if (cart.length === 0) {
+    summaryItems.innerHTML = '<p class="empty-cart">Cart is empty. <a href="/">Go back to shop.</a></p>';
+  } else {
+    let total = 0;
+    summaryItems.innerHTML = '';
+    cart.forEach(item => {
+      total += item.price * item.qty;
+      summaryItems.innerHTML += `
+        <div class="summary-item">
+          <span class="item-name">${item.name} × ${item.qty}</span>
+          <span class="item-price">₹${item.price * item.qty}</span>
+        </div>`;
+    });
+    summaryTotal.textContent = '₹' + total;
+    hiddenItems.value = JSON.stringify(cart);
+    hiddenTotal.value = total;
+  }
+</script>
+</body>
+</html>

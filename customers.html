@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Customers — Smart Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --green:      #2e7d32;
+      --green-pale: #e8f5e9;
+      --green-dark: #1b5e20;
+      --red:        #e53935;
+      --red-pale:   #ffebee;
+      --bg:         #f0f4f0;
+      --card:       #ffffff;
+      --text:       #1a2e1a;
+      --muted:      #7a9b7a;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    /* LAYOUT */
+    .layout { display:flex; min-height:100vh; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width:240px; background:var(--green-dark); padding:2rem 1.2rem;
+      display:flex; flex-direction:column; gap:0.4rem;
+      position:fixed; height:100vh; overflow-y:auto;
+    }
+    .sidebar-logo { font-family:'Playfair Display',serif; color:white; font-size:1.4rem; margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.15); }
+    .sidebar-logo span { font-size:0.75rem; display:block; color:#a5d6a7; font-family:'Nunito',sans-serif; font-weight:600; margin-top:2px; }
+    .nav-section { color:#81c784; font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; padding:1rem 1rem 0.4rem; }
+    .nav-item { display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; border-radius:10px; color:#c8e6c9; text-decoration:none; font-weight:700; font-size:0.9rem; transition:all 0.2s; }
+    .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.15); color:white; }
+    .nav-item .icon { font-size:1.1rem; width:22px; text-align:center; }
+
+    /* MAIN */
+    .main { margin-left:240px; flex:1; padding:2rem; }
+
+    /* PAGE HEADER */
+    .page-header {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:2rem;
+    }
+    .page-header h1 { font-family:'Playfair Display',serif; font-size:1.8rem; color:var(--green-dark); }
+    .btn-add {
+      background:var(--green); color:white; text-decoration:none;
+      padding:0.7rem 1.5rem; border-radius:12px;
+      font-weight:800; font-size:0.9rem;
+      display:flex; align-items:center; gap:0.5rem;
+      transition:background 0.2s; box-shadow:0 4px 12px rgba(46,125,50,0.3);
+    }
+    .btn-add:hover { background:var(--green-dark); }
+
+    /* STATS ROW */
+    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; margin-bottom:2rem; }
+    .stat-card {
+      background:var(--card); border-radius:16px; padding:1.2rem 1.5rem;
+      box-shadow:0 2px 12px rgba(0,0,0,0.06);
+      display:flex; align-items:center; gap:1rem;
+      animation:fadeUp 0.4s ease both;
+    }
+    .stat-card:nth-child(1){animation-delay:0.05s}
+    .stat-card:nth-child(2){animation-delay:0.1s}
+    .stat-card:nth-child(3){animation-delay:0.15s}
+    @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    .stat-icon-box { width:50px; height:50px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; }
+    .bg-green  { background:var(--green-pale); }
+    .bg-blue   { background:#e3f2fd; }
+    .bg-orange { background:#fff3e0; }
+    .stat-info-label { font-size:0.78rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+    .stat-info-value { font-size:1.5rem; font-weight:900; color:var(--text); }
+
+    /* SEARCH BAR */
+    .search-bar {
+      background:var(--card); border-radius:14px;
+      padding:1rem 1.5rem; margin-bottom:1.5rem;
+      box-shadow:0 2px 10px rgba(0,0,0,0.05);
+      display:flex; align-items:center; gap:0.8rem;
+      animation:fadeUp 0.4s ease 0.2s both;
+    }
+    .search-bar input {
+      border:none; outline:none; font-family:'Nunito',sans-serif;
+      font-size:0.95rem; width:100%; background:none; color:var(--text);
+    }
+    .search-bar input::placeholder { color:var(--muted); }
+    .search-icon { font-size:1.1rem; color:var(--muted); }
+
+    /* TABLE CARD */
+    .table-card {
+      background:var(--card); border-radius:16px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.06);
+      overflow:hidden;
+      animation:fadeUp 0.4s ease 0.25s both;
+    }
+    .table-card-header {
+      padding:1.2rem 1.5rem;
+      display:flex; justify-content:space-between; align-items:center;
+      border-bottom:2px solid var(--green-pale);
+    }
+    .table-card-title { font-weight:900; font-size:1rem; color:var(--green-dark); }
+    .count-badge {
+      background:var(--green-pale); color:var(--green);
+      font-size:0.78rem; font-weight:800;
+      padding:0.25rem 0.8rem; border-radius:20px;
+    }
+
+    table { width:100%; border-collapse:collapse; }
+    thead tr { background:var(--green-pale); }
+    th {
+      padding:0.75rem 1.2rem; text-align:left;
+      font-size:0.78rem; font-weight:800; color:var(--green-dark);
+      text-transform:uppercase; letter-spacing:0.5px;
+    }
+    td {
+      padding:0.9rem 1.2rem; border-bottom:1px solid #f5f5f5;
+      font-size:0.9rem; color:#444; vertical-align:middle;
+    }
+    tr:last-child td { border-bottom:none; }
+    tbody tr { transition:background 0.15s; }
+    tbody tr:hover td { background:#f9fff9; }
+
+    /* AVATAR */
+    .customer-cell { display:flex; align-items:center; gap:0.8rem; }
+    .avatar {
+      width:38px; height:38px; border-radius:50%;
+      background:var(--green-pale); color:var(--green);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:900; font-size:1rem; flex-shrink:0;
+    }
+    .customer-name  { font-weight:800; color:var(--text); font-size:0.92rem; }
+    .customer-email { font-size:0.78rem; color:var(--muted); font-weight:600; }
+
+    /* BADGES */
+    .phone-badge {
+      background:#f3f4f6; color:#555;
+      padding:0.25rem 0.7rem; border-radius:20px;
+      font-size:0.82rem; font-weight:700; display:inline-block;
+    }
+    .id-badge {
+      background:var(--green-pale); color:var(--green);
+      padding:0.2rem 0.6rem; border-radius:8px;
+      font-size:0.8rem; font-weight:900;
+    }
+
+    /* DELETE BTN */
+    .btn-delete {
+      background:var(--red-pale); color:var(--red);
+      border:none; padding:0.35rem 0.9rem;
+      border-radius:20px; cursor:pointer;
+      font-family:'Nunito',sans-serif; font-weight:700; font-size:0.8rem;
+      text-decoration:none; transition:background 0.2s;
+      display:inline-block;
+    }
+    .btn-delete:hover { background:#ffcdd2; }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align:center; padding:4rem 2rem;
+    }
+    .empty-state .empty-icon { font-size:3.5rem; margin-bottom:1rem; }
+    .empty-state h3 { font-size:1.2rem; font-weight:800; color:var(--text); margin-bottom:0.5rem; }
+    .empty-state p  { color:var(--muted); font-weight:600; margin-bottom:1.5rem; }
+    .empty-state a  {
+      background:var(--green); color:white; text-decoration:none;
+      padding:0.7rem 1.5rem; border-radius:12px; font-weight:800; font-size:0.9rem;
+      display:inline-block; transition:background 0.2s;
+    }
+    .empty-state a:hover { background:var(--green-dark); }
+
+    /* NO SEARCH RESULTS */
+    .no-results { text-align:center; padding:2.5rem; color:var(--muted); font-weight:700; }
+
+    @media(max-width:900px){
+      .sidebar{display:none} .main{margin-left:0}
+      .stats-row{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">🛒 Smart Store<span>Admin Panel</span></div>
+    <span class="nav-section">Main</span>
+    <a href="/admin"     class="nav-item"><span class="icon">📊</span> Dashboard</a>
+    <a href="/customers" class="nav-item active"><span class="icon">👥</span> Customers</a>
+    <span class="nav-section">Inventory</span>
+    <a href="/view_products" class="nav-item"><span class="icon">📦</span> Products</a>
+    <a href="/add_product"   class="nav-item"><span class="icon">➕</span> Add Product</a>
+    <span class="nav-section">Store</span>
+    <a href="/" class="nav-item"><span class="icon">🏪</span> View Store</a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="page-header">
+      <h1>👥 Customers</h1>
+      <a href="/add_customer" class="btn-add">➕ Add Customer</a>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon-box bg-green">👥</div>
+        <div>
+          <div class="stat-info-label">Total Customers</div>
+          <div class="stat-info-value">{{ customers|length }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon-box bg-blue">📧</div>
+        <div>
+          <div class="stat-info-label">Registered Emails</div>
+          <div class="stat-info-value">{{ customers|length }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon-box bg-orange">📱</div>
+        <div>
+          <div class="stat-info-label">With Phone</div>
+          <div class="stat-info-value">{{ customers|selectattr(3, 'ne', None)|list|length if customers else 0 }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search by name, email or phone..."/>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+      <div class="table-card-header">
+        <span class="table-card-title">Customer List</span>
+        <span class="count-badge" id="countBadge">{{ customers|length }} customers</span>
+      </div>
+
+      {% if customers %}
+      <table id="customerTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Phone</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="customerBody">
+          {% for c in customers %}
+          <tr class="customer-row"
+              data-name="{{ c[1]|lower }}"
+              data-email="{{ c[2]|lower if c[2] else '' }}"
+              data-phone="{{ c[3] if c[3] else '' }}">
+            <td><span class="id-badge">#{{ c[0] }}</span></td>
+            <td>
+              <div class="customer-cell">
+                <div class="avatar">{{ c[1][0]|upper if c[1] else '?' }}</div>
+                <div>
+                  <div class="customer-name">{{ c[1] }}</div>
+                  <div class="customer-email">{{ c[2] if c[2] else '—' }}</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="phone-badge">📱 {{ c[3] if c[3] else '—' }}</span></td>
+            <td>
+              <a href="/delete_customer/{{ c[0] }}"
+                 class="btn-delete"
+                 onclick="return confirm('Delete {{ c[1] }}?')">🗑 Delete</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="no-results" id="noResults" style="display:none;">
+        😔 No customers match your search.
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <h3>No Customers Yet</h3>
+        <p>Customers who register on your store will appear here.</p>
+        <a href="/add_customer">➕ Add First Customer</a>
+      </div>
+      {% endif %}
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const searchInput = document.getElementById('searchInput');
+  const rows        = document.querySelectorAll('.customer-row');
+  const noResults   = document.getElementById('noResults');
+  const countBadge  = document.getElementById('countBadge');
+
+  searchInput.addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    let visible = 0;
+    rows.forEach(row => {
+      const name  = row.dataset.name  || '';
+      const email = row.dataset.email || '';
+      const phone = row.dataset.phone || '';
+      const match = name.includes(q) || email.includes(q) || phone.includes(q);
+      row.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    noResults.style.display = visible === 0 ? 'block' : 'none';
+    countBadge.textContent = visible + ' customer' + (visible !== 1 ? 's' : '');
+  });
+</script>
+</body>
+</html>
